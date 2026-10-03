@@ -62,6 +62,21 @@ function ComponentContextBar() {
         });
     };
 
+    const updateOutput = (
+        outputId: string,
+        updates: Partial<ComponentNode["data"]["outputs"][number]>
+    ) => {
+        if (!node) return;
+
+        updateNode({
+            outputs: node.data.outputs.map((output) =>
+                output.id === outputId
+                    ? { ...output, ...updates }
+                    : output
+            ),
+        });
+    };
+
     const removeInput = (inputId: string) => {
         if (!node) return;
 
@@ -72,12 +87,37 @@ function ComponentContextBar() {
         });
     };
 
+    const removeOutput = (outputId: string) => {
+        if (!node) return;
+
+        updateNode({
+            outputs: node.data.outputs.filter(
+                (output) => output.id !== outputId
+            ),
+        });
+    };
+
     const addInput = () => {
         if (!node) return;
 
         updateNode({
             inputs: [
                 ...node.data.inputs,
+                {
+                    id: crypto.randomUUID(),
+                    name: "",
+                    type: "",
+                },
+            ],
+        });
+    };
+
+    const addOutput = () => {
+        if (!node) return;
+
+        updateNode({
+            outputs: [
+                ...node.data.outputs,
                 {
                     id: crypto.randomUUID(),
                     name: "",
@@ -140,14 +180,28 @@ function ComponentContextBar() {
                     </div>
                     <div>
                         <label htmlFor="" className='font-sans text-muted-foreground'>Output:</label>
-                        <div className='flex flex-row items-center gap-2 mt-1' >
-                            <Input placeholder='Output Name' />
-                            <Input placeholder='Output Type' />
-                            <Button variant={"secondary"} >
-                                <HugeiconsIcon icon={XIcon} strokeWidth={2} />
-                            </Button>
-                        </div>
-                        <Button className='bg-transparent text-sidebar-primary mt-4 border border-sidebar border-dashed w-full hover:bg-transparent hover:border-sidebar-primary cursor-pointer' >
+                        {
+                            node?.data.outputs.map((item, key) => {
+                                return (
+                                    <div key={key} className='flex flex-row items-center gap-2 mt-1'>
+                                        <Input placeholder='Output Name' value={item.name} onChange={(e) => {
+                                            updateOutput(item.id, {
+                                                name: e.target.value
+                                            })
+                                        }} />
+                                        <Input placeholder='Output Type' value={item.type} onChange={(e) => {
+                                            updateOutput(item.id, {
+                                                type: e.target.value
+                                            })
+                                        }} />
+                                        <Button variant={"secondary"} key={item.id} onClick={()=>removeOutput(item.id)} >
+                                            <HugeiconsIcon icon={XIcon} strokeWidth={2} />
+                                        </Button>
+                                    </div>
+                                )
+                            })
+                        }
+                        <Button onClick={addOutput} className='bg-transparent text-sidebar-primary mt-4 border border-sidebar border-dashed w-full hover:bg-transparent hover:border-sidebar-primary cursor-pointer' >
                             <HugeiconsIcon icon={Add01Icon} />
                             <span>add output</span>
                         </Button>

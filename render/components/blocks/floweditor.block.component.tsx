@@ -99,7 +99,7 @@ export function FlowEditor() {
         data: {
           label: `Function ${nodesSnapshot.length + 1}`,
           inputs:[{id:`Fn-${nodesSnapshot.length + 1}-inp`, type:"any", name:"input function"}],
-          outputs:[{}]
+          outputs:[{id:`Fn-${nodesSnapshot.length + 1}-oup`, type:"any", name:"output function"}]
         },
       },
     ])
