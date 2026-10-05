@@ -24,6 +24,7 @@ import { useSidePanelStore } from "@/lib/stores/sidepanel.store.lib"
 import XIcon from "@hugeicons/core-free-icons/XIcon"
 import { Button } from "./ui/button"
 import SidePanel from "./blocks/sidepanel.block.component"
+import { useRouter } from "next/navigation"
 
 // This is sample data
 
@@ -32,6 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // IRL you should use the url/router.
   const { setOpen } = useSidePanelStore();
+  const router = useRouter();
   const data = {
     user: {
       name: "shadcn",
@@ -41,12 +43,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Home",
-        url: "#",
+        url: "/",
         icon: (
           <HugeiconsIcon icon={Home02Icon} strokeWidth={2} />
         ),
         isActive: true,
-        callback: () => { }
+        callback: () => {
+          router.push("/");
+        }
       },
       {
         title: "Components",
