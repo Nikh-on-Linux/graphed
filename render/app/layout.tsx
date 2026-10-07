@@ -8,9 +8,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useSidePanelStore } from "@/lib/stores/sidepanel.store.lib";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -40,6 +40,7 @@ export default function RootLayout({
             <TooltipProvider>
               <AppSidebar />
               {children}
+              <Toaster richColors />
             </TooltipProvider>
           </SidebarProvider>
         </ThemeProvider>

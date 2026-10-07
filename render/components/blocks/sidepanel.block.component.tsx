@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Sidebar,
     SidebarContent,
@@ -22,10 +22,35 @@ import {
 import { Input } from '../ui/input';
 import { Textarea } from "@/components/ui/textarea"
 import { AnimatePresence, motion } from 'framer-motion';
+import FunctionGroup from './functiongroup.block.component';
+import { getProjectStore } from '@/lib/registry/project.registry.lib';
+import { getFunctionGroupStore } from '@/lib/registry/functiongroup.registry.lib';
+import { useActiveProjectStore } from '@/lib/stores/activeproject.store.lib';
+import { useStore } from 'zustand';
+import { toast } from 'sonner';
 
 function SidePanel() {
     const { isOpen, setOpen } = useSidePanelStore();
     const [isGroupOpen, setGroupOpen] = useState(false);
+    const [newFnValue, setNewFnValue] = useState("");
+    const { currentProjectId } = useActiveProjectStore();
+    const projectStore = getProjectStore(currentProjectId || "");
+    const functionGroups = useStore(
+        projectStore,
+        (s)=>s.project?.functionGroupIds
+    )
+
+    const newFnGroup = () => {
+        if(currentProjectId === null || currentProjectId === ""){
+            toast.error("No project selected");
+            return;
+        }
+        const groupId = crypto.randomUUID();
+        projectStore.getState().addFunctionGroup(groupId);
+        const functionGroupStore = getFunctionGroupStore(currentProjectId || "", groupId);
+        functionGroupStore.getState().setName(newFnValue);
+    }
+
     return (
         <Sidebar collapsible="none" className="hidden min-w-0 flex-1 md:flex px-2" >
             <SidebarHeader className='flex flex-row items-center' >
@@ -41,42 +66,23 @@ function SidePanel() {
             <SidebarContent>
                 {/* <SidebarSeparator /> */}
                 <SidebarGroup className='flex flex-row items-center gap-2' >
-                    <Input placeholder='New group name' />
-                    <Button variant={"outline"} size={"icon"}>
+                    <Input placeholder='New group name' value={newFnValue} onChange={(e) => setNewFnValue(e.target.value)} />
+                    <Button variant={"outline"} size={"icon"} onClick={newFnGroup} >
                         <HugeiconsIcon icon={PlusIcon} strokeWidth={2} />
                     </Button>
                 </SidebarGroup>
                 <SidebarSeparator />
                 <SidebarGroup>
-                    <SidebarMenu>
-                        <Collapsible className='group' open={isGroupOpen} onOpenChange={setGroupOpen}>
-                            <CollapsibleTrigger asChild className='w-full outline-0 text-left flex flex-row items-center gap-2'>
-                                <SidebarMenuButton >
-                                    <HugeiconsIcon icon={ComponentIcon} strokeWidth={1.5} />
-                                    <span className='font-sans w-full font-medium'>Function Group</span>
-                                    <HugeiconsIcon className='group-data-open:rotate-90 transition-all' icon={ChevronRightIcon} strokeWidth={2} />
-                                </SidebarMenuButton>
-                            </CollapsibleTrigger>
-                            <AnimatePresence initial={false}>
-                                {isGroupOpen && (
-                                    <CollapsibleContent forceMount asChild>
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2, ease: 'easeOut' }}
-                                            className='overflow-hidden'
-                                        >   
-                                            <div className='my-2 px-1'>
-                                                <span className='font-sans block text-sm mb-2 text-muted-foreground'>Group Context:</span>
-                                                <Textarea className='max-h-64 block overflow-y-auto' rows={2} />
-                                            </div>
-                                        </motion.div>
-                                    </CollapsibleContent>
-                                )}
-                            </AnimatePresence>
-                        </Collapsible>
-                    </SidebarMenu>
+                    {
+                        functionGroups?.map((group: string | undefined, key) => {
+                            const fngroup = getFunctionGroupStore(currentProjectId || "", group || "")
+                            return (
+                                <SidebarMenu key={key} >
+                                    <FunctionGroup name={fngroup.getState().group.name}  />
+                                </SidebarMenu>
+                            )
+                        })
+                    }
                 </SidebarGroup>
                 <SidebarGroup />
             </SidebarContent>

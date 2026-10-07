@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   addEdge,
   applyEdgeChanges,
@@ -39,7 +39,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import FunctionNode from "../nodes/function.node.component"
-import TopPanel from "./toppanel.block.component"
+import { getProjectStore } from "@/lib/registry/project.registry.lib"
+import { useActiveProjectStore } from "@/lib/stores/activeproject.store.lib"
 
 type FlowNode = Node<{ label: string }>
 
@@ -54,10 +55,16 @@ export function FlowEditor() {
   const flowRef = useRef<HTMLDivElement>(null);
   const { x, y, zoom } = useViewport()
   const { deleteElements } = useReactFlow();
+  const {currentProjectId} = useActiveProjectStore();
 
   const nodeTypes = {
     functionNode: FunctionNode,
   };
+
+  useEffect(()=>{
+    const projectStore = getProjectStore(currentProjectId || "");
+    const project = projectStore.getState().project;
+  },[])
 
   const onNodesChange = useCallback(
     (changes: NodeChange<FlowNode>[]) =>

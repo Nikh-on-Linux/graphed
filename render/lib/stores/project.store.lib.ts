@@ -1,16 +1,6 @@
 import { createStore } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
-
-export type Project = {
-  id: string;
-  name: string;
-  description?: string;
-
-  functionGroupIds: string[];
-
-  createdAt: number;
-  updatedAt: number;
-};
+import { Project } from "@/lib/types/project.type.lib";
 
 export type ProjectStore = {
   project: Project | null;
