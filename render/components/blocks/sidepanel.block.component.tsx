@@ -7,18 +7,12 @@ import {
     SidebarGroup,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useSidePanelStore } from '@/lib/stores/sidepanel.store.lib';
 import { Button } from '../ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ChevronRightIcon, ComponentIcon, PlusIcon, Pulse01Icon, XIcon } from '@hugeicons/core-free-icons';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 import { Input } from '../ui/input';
 import { Textarea } from "@/components/ui/textarea"
 import { AnimatePresence, motion } from 'framer-motion';
@@ -37,11 +31,11 @@ function SidePanel() {
     const projectStore = getProjectStore(currentProjectId || "");
     const functionGroups = useStore(
         projectStore,
-        (s)=>s.project?.functionGroupIds
+        (s) => s.project?.functionGroupIds
     )
 
     const newFnGroup = () => {
-        if(currentProjectId === null || currentProjectId === ""){
+        if (currentProjectId === null || currentProjectId === "") {
             toast.error("No project selected");
             return;
         }
@@ -75,10 +69,9 @@ function SidePanel() {
                 <SidebarGroup>
                     {
                         functionGroups?.map((group: string | undefined, key) => {
-                            const fngroup = getFunctionGroupStore(currentProjectId || "", group || "")
                             return (
                                 <SidebarMenu key={key} >
-                                    <FunctionGroup name={fngroup.getState().group.name}  />
+                                    <FunctionGroup currentProjectId={currentProjectId || ""} group={group || ""} />
                                 </SidebarMenu>
                             )
                         })
@@ -92,3 +85,5 @@ function SidePanel() {
 }
 
 export default SidePanel
+
+// Function description of different 

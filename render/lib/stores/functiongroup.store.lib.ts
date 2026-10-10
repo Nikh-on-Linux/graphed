@@ -5,6 +5,7 @@ import type { Node, Edge } from "@xyflow/react";
 export type FunctionGroup = {
   id: string;
   name: string;
+  description: string;
 
   nodes: Node[];
   edges: Edge[];
@@ -14,6 +15,7 @@ export type FunctionGroupStore = {
   group: FunctionGroup;
 
   setName: (name: string) => void;
+  setDescription: (value: string) => void;
 
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -32,6 +34,7 @@ export const createFunctionGroupStore = (
         group: {
           id: groupId,
           name: "Untitled Group",
+          description: "",
 
           nodes: [],
           edges: [],
@@ -76,6 +79,15 @@ export const createFunctionGroupStore = (
               edges,
             },
           })),
+
+        setDescription: (value: string) => {
+          set((state)=>({
+            group: {
+              ...state.group,
+              description: value
+            }
+          }))
+        }
       }),
 
       {

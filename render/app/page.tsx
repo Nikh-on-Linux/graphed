@@ -98,6 +98,11 @@ export default function Page() {
 
     router.push("/app");
   };
+
+  const openProject = (id:string)=>{
+    setCurrentProject(id);
+    router.push('/app');
+  }
   return (
     <section className=" w-full h-screen flex flex-col items-center justify-center px-8 gap-20">
       <Dialog>
@@ -159,7 +164,7 @@ export default function Page() {
                 return (
                   <TableRow className="group flex duration-0" key={key}>
                     <TableCell className="flex-1 text-muted-foreground group-hover:text-foreground">{project.project.name}</TableCell>
-                    <TableCell className="opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
+                    <TableCell onClick={()=>openProject(project.id)} className="opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
                       <Button variant={"secondary"} className="group/b gap-0 hover:bg-foreground/20">
                         <span className="inline-grid grid-cols-[0fr] group-hover/b:grid-cols-[1fr] transition-[grid-template-columns] duration-200 ease-out">
                           <span className="overflow-hidden font-sans whitespace-nowrap">
