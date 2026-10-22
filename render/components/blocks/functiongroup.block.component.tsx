@@ -7,17 +7,23 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Textarea } from '../ui/textarea'
 import { getFunctionGroupStore } from '@/lib/registry/functiongroup.registry.lib'
 import { useStore } from 'zustand'
+import { useFlowEditorStore } from '@/lib/stores/floweditor.store.lib'
 
 function FunctionGroup({ currentProjectId, group }: { currentProjectId: string, group: string }) {
     const [isGroupOpen, setGroupOpen] = useState(false);
     const fngroup = getFunctionGroupStore(currentProjectId || "", group || "");
+    const { selectFunctionGroup } = useFlowEditorStore();
     const { name, description } = useStore(
         fngroup,
         (s) => s.group
     )
 
+    const openFnGroup = () => {
+        selectFunctionGroup(currentProjectId, group);
+    }
+
     return (
-        <Collapsible className='group' open={isGroupOpen} onOpenChange={setGroupOpen}>
+        <Collapsible className='group' open={isGroupOpen} onOpenChange={setGroupOpen} onClick={openFnGroup}>
             <CollapsibleTrigger asChild className='w-full outline-0 text-left flex flex-row items-center gap-2'>
                 <SidebarMenuButton >
                     <HugeiconsIcon icon={ComponentIcon} strokeWidth={1.5} />

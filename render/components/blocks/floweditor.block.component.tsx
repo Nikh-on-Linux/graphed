@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   addEdge,
   applyEdgeChanges,
@@ -13,7 +14,6 @@ import {
   ReactFlow,
   useReactFlow,
   useViewport,
-  getConnectedEdges,
   type Connection,
   type EdgeChange,
   type Node,
@@ -23,7 +23,6 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Add01FreeIcons,
   ComponentIcon,
-  Delete02Icon,
   FunctionSquareIcon,
   WorkflowSquare07Icon,
 } from "@hugeicons/core-free-icons"
@@ -39,49 +38,99 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import FunctionNode from "../nodes/function.node.component"
-import { getProjectStore } from "@/lib/registry/project.registry.lib"
-import { useActiveProjectStore } from "@/lib/stores/activeproject.store.lib"
-
-type FlowNode = Node<{ label: string }>
-
-const initialNodes: FlowNode[] = []
-
-const initialEdges: any = []
+import { getFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib"
+import { useFlowEditorStore } from "@/lib/stores/floweditor.store.lib"
+import { useStore } from "zustand"
 
 export function FlowEditor() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
-  const [selectedEdges, setSelectedEdges] = useState([]);
+  const activeProjectId = useFlowEditorStore(
+    (state) => state.activeProjectId
+  );
+  const activeFunctionGroupId = useFlowEditorStore(
+    (state) => state.activeFunctionGroupId
+  );
+  const clearSelection  = useFlowEditorStore(
+    (state) => state.clearSelection
+  );
+
+  useEffect(()=>{
+    return clearSelection();
+  },[])
+
+  if (!activeProjectId || !activeFunctionGroupId) {
+    return <div className="h-screen w-full" />;
+  }
+
+  return (
+    <FlowEditorCanvas
+      key={`${activeProjectId}:${activeFunctionGroupId}`}
+      projectId={activeProjectId}
+      groupId={activeFunctionGroupId}
+    />
+  );
+}
+
+function FlowEditorCanvas({
+  projectId,
+  groupId,
+}: {
+  projectId: string;
+  groupId: string;
+}) {
+  const fnStore = useMemo(
+    () => getFunctionGroupStore(projectId, groupId),
+    [projectId, groupId]
+  );
+
+  const nodes = useStore(
+    fnStore,
+    (state) => state.group.nodes
+  );
+  const edges = useStore(
+    fnStore,
+    (state) => state.group.edges
+  );
+
+  const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const flowRef = useRef<HTMLDivElement>(null);
   const { x, y, zoom } = useViewport()
   const { deleteElements } = useReactFlow();
-  const {currentProjectId} = useActiveProjectStore();
 
   const nodeTypes = {
     functionNode: FunctionNode,
   };
 
-  useEffect(()=>{
-    const projectStore = getProjectStore(currentProjectId || "");
-    const project = projectStore.getState().project;
-  },[])
-
   const onNodesChange = useCallback(
-    (changes: NodeChange<FlowNode>[]) =>
-      setNodes((nodesSnapshot) =>
-        applyNodeChanges<FlowNode>(changes, nodesSnapshot),
-      ),
-    [],
+    (changes: NodeChange[]) => {
+      const state = fnStore.getState();
+
+      state.setNodes(
+        applyNodeChanges(changes, state.group.nodes)
+      );
+    },
+    [fnStore],
   )
+
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
+    (changes: EdgeChange[]) => {
+      const state = fnStore.getState();
+
+      state.setEdges(
+        applyEdgeChanges(changes, state.group.edges)
+      );
+    },
+    [fnStore],
   )
+
   const onConnect = useCallback(
-    (params: Connection) =>
-      setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
+    (params: Connection) => {
+      const state = fnStore.getState();
+
+      state.setEdges(
+        addEdge(params, state.group.edges)
+      );
+    },
+    [fnStore],
   )
 
   const onEdgeDoubleClick = useCallback((e: any, edge: Edge) => {
@@ -97,16 +146,25 @@ export function FlowEditor() {
       }
       : { x: 0, y: 0 }
 
-    setNodes((nodesSnapshot) => [
-      ...nodesSnapshot,
+    const state = fnStore.getState();
+    const currentNodes = state.group.nodes;
+
+    let nodeNumber = currentNodes.length + 1;
+
+    while (currentNodes.some((node) => node.id === `fn${nodeNumber}`)) {
+      nodeNumber += 1;
+    }
+
+    state.setNodes([
+      ...currentNodes,
       {
-        id: `fn${nodesSnapshot.length + 1}`,
+        id: `fn${nodeNumber}`,
         position: flowPosition,
         type: "functionNode",
         data: {
-          label: `Function ${nodesSnapshot.length + 1}`,
-          inputs:[{id:`Fn-${nodesSnapshot.length + 1}-inp`, type:"any", name:"input function"}],
-          outputs:[{id:`Fn-${nodesSnapshot.length + 1}-oup`, type:"any", name:"output function"}]
+          label: `Function ${nodeNumber}`,
+          inputs: [{ id: `Fn-${nodeNumber}-inp`, type: "any", name: "input function" }],
+          outputs: [{ id: `Fn-${nodeNumber}-oup`, type: "any", name: "output function" }]
         },
       },
     ])
@@ -114,29 +172,35 @@ export function FlowEditor() {
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: { nodes: Node[] }) => {
-      setEdges((currentEdges) =>
-        currentEdges.map((edge) => {
-          const isConnected = selectedNodes.some(
-            (node) =>
-              node.id === edge.source ||
-              node.id === edge.target
-          )
-
-          return {
-            ...edge,
-            style: {
-              stroke: isConnected
-                ? "var(--sidebar-primary)"
-                : "var(--muted-foreground)",
-              strokeWidth: isConnected ? 2 : 1.5,
-            },
-          }
-        })
-      )
+      setSelectedNodeIds(
+        selectedNodes.map((node) => node.id)
+      );
     },
     []
   )
 
+  const displayEdges = useMemo(
+    () =>
+      edges.map((edge) => {
+        const isConnected = selectedNodeIds.some(
+          (id) =>
+            id === edge.source ||
+            id === edge.target
+        );
+
+        return {
+          ...edge,
+          style: {
+            ...edge.style,
+            stroke: isConnected
+              ? "var(--sidebar-primary)"
+              : "var(--muted-foreground)",
+            strokeWidth: isConnected ? 2 : 1.5,
+          },
+        };
+      }),
+    [edges, selectedNodeIds]
+  );
 
   return (
     <div ref={flowRef} className="h-screen w-full">
@@ -144,7 +208,7 @@ export function FlowEditor() {
         <ContextMenuTrigger>
           <ReactFlow
             nodes={nodes}
-            edges={edges}
+            edges={displayEdges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onEdgeDoubleClick={onEdgeDoubleClick}
