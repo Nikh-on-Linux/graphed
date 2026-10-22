@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import {
     Drawer,
     DrawerClose,
@@ -18,22 +18,40 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Node, useReactFlow, useNodesData } from '@xyflow/react';
 import { ComponentNode } from '@/lib/types/function.type.lib';
+import { useFlowEditorStore } from '@/lib/stores/floweditor.store.lib';
+import { getFunctionGroupStore } from '@/lib/registry/functiongroup.registry.lib';
+import { useStore } from 'zustand';
+import { toast } from 'sonner';
 
 function ComponentContextBar() {
     const { panelOpen, setPanelOpen, name, setName, id } = useComponentStore();
     const { getNode, setNodes } = useReactFlow();
     const [curName, setCurName] = useState("");
+    const { updateNode } = useReactFlow();
+    const highlightedNodeIds = useRef<Set<string>>(new Set());
+    const { activeFunctionGroupId, activeProjectId } = useFlowEditorStore();
+    const fngroup = useMemo(
+        () => getFunctionGroupStore(activeProjectId || "", activeFunctionGroupId || ""),
+        [activeProjectId, activeFunctionGroupId]
+    )
+
+    const nodes = useStore(
+        fngroup,
+        (state) => state.group.nodes
+    )
 
     const node = useNodesData<ComponentNode>(id);
     // useEffect(() => {
     //     setNode(getNode(id));
     // }, [id])
 
-    const updateNode = (updates: Partial<ComponentNode["data"]>) => {
+    const updateStoreNode = (updates: Partial<ComponentNode["data"]>) => {
         if (!id) return;
 
-        setNodes((nodes: Array<Node>) =>
-            nodes.map((currentNode) =>
+        const state = fngroup.getState();
+
+        state.setNodes(
+            state.group.nodes.map((currentNode) =>
                 currentNode.id === id
                     ? {
                         ...currentNode,
@@ -53,7 +71,7 @@ function ComponentContextBar() {
     ) => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             inputs: node.data.inputs.map((input) =>
                 input.id === inputId
                     ? { ...input, ...updates }
@@ -68,7 +86,7 @@ function ComponentContextBar() {
     ) => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             outputs: node.data.outputs.map((output) =>
                 output.id === outputId
                     ? { ...output, ...updates }
@@ -80,7 +98,7 @@ function ComponentContextBar() {
     const removeInput = (inputId: string) => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             inputs: node.data.inputs.filter(
                 (input) => input.id !== inputId
             ),
@@ -90,7 +108,7 @@ function ComponentContextBar() {
     const removeOutput = (outputId: string) => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             outputs: node.data.outputs.filter(
                 (output) => output.id !== outputId
             ),
@@ -100,7 +118,7 @@ function ComponentContextBar() {
     const addInput = () => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             inputs: [
                 ...node.data.inputs,
                 {
@@ -115,7 +133,7 @@ function ComponentContextBar() {
     const addOutput = () => {
         if (!node) return;
 
-        updateNode({
+        updateStoreNode({
             outputs: [
                 ...node.data.outputs,
                 {
@@ -126,6 +144,58 @@ function ComponentContextBar() {
             ],
         });
     };
+
+    
+    const checkNameAmbiguity = (functionName: string) => {
+        const normalizedName = functionName.trim();
+
+        const matchingNodes = normalizedName
+            ? nodes.filter((lnode) =>
+                lnode.id !== id &&
+                String(lnode.data.label ?? "").trim() === normalizedName
+            )
+            : [];
+
+        const nextHighlightedNodeIds = new Set<string>();
+
+        if (matchingNodes.length > 0) {
+            if (id) nextHighlightedNodeIds.add(id);
+
+            matchingNodes.forEach((lnode) => {
+                nextHighlightedNodeIds.add(lnode.id);
+            });
+        }
+
+        const nodesToUpdate = new Set([
+            ...highlightedNodeIds.current,
+            ...nextHighlightedNodeIds,
+        ]);
+
+        nodesToUpdate.forEach((nodeId) => {
+            const currentNode = getNode(nodeId);
+
+            if (!currentNode) return;
+
+            const isConflict = nextHighlightedNodeIds.has(nodeId);
+
+            const border = isConflict
+                ? "1px solid var(--destructive)"
+                : "var(--xy-node-border-default)";
+
+            if(isConflict) toast.error(`Function name conflict: ${functionName} already exists`)
+            if (currentNode.style?.border === border) return;
+
+            updateNode(nodeId, {
+                style: {
+                    ...currentNode.style,
+                    border,
+                },
+            });
+        });
+
+        highlightedNodeIds.current = nextHighlightedNodeIds;
+    };
+
 
     return (
         <Drawer open={panelOpen} onOpenChange={setPanelOpen} direction='right' >
@@ -142,11 +212,14 @@ function ComponentContextBar() {
                 <div className='px-4 flex flex-col gap-6'>
                     <div>
                         <label htmlFor="nameinp" className='font-sans text-muted-foreground'>Name:</label>
-                        <Input placeholder='Function Name' className='mt-1' id='nameinp' value={node?.data.label} onChange={(e) => { updateNode({ label: e.target.value }) }} />
+                        <Input placeholder='Function Name' className='mt-1' id='nameinp' value={node?.data.label} onChange={(e) => {
+                            updateStoreNode({ label: e.target.value })
+                            checkNameAmbiguity(e.target.value);
+                        }} />
                     </div>
                     <div className='border-b pb-6' >
                         <label htmlFor="namecontext" className='font-sans text-muted-foreground'>Description:</label>
-                        <Textarea placeholder='Component Description' className='mt-1' id='namecontext' onChange={(e) => updateNode({ description: e.target.value })} value={node?.data.description} />
+                        <Textarea placeholder='Component Description' className='mt-1' id='namecontext' onChange={(e) => updateStoreNode({ description: e.target.value })} value={node?.data.description} />
                     </div>
                     <div className='border-b pb-4' >
                         <label htmlFor="" className='font-sans text-muted-foreground'>Inputs:</label>
@@ -165,7 +238,7 @@ function ComponentContextBar() {
                                                 type: e.target.value
                                             })
                                         }} />
-                                        <Button variant={"secondary"} key={item.id} onClick={()=>removeInput(item.id)} >
+                                        <Button variant={"secondary"} key={item.id} onClick={() => removeInput(item.id)} >
                                             <HugeiconsIcon icon={XIcon} strokeWidth={2} />
                                         </Button>
                                     </div>
@@ -194,7 +267,7 @@ function ComponentContextBar() {
                                                 type: e.target.value
                                             })
                                         }} />
-                                        <Button variant={"secondary"} key={item.id} onClick={()=>removeOutput(item.id)} >
+                                        <Button variant={"secondary"} key={item.id} onClick={() => removeOutput(item.id)} >
                                             <HugeiconsIcon icon={XIcon} strokeWidth={2} />
                                         </Button>
                                     </div>

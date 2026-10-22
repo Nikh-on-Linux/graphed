@@ -94,7 +94,7 @@ function FlowEditorCanvas({
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const flowRef = useRef<HTMLDivElement>(null);
   const { x, y, zoom } = useViewport()
-  const { deleteElements } = useReactFlow();
+  const { deleteElements, updateNode} = useReactFlow();
 
   const nodeTypes = {
     functionNode: FunctionNode,
@@ -168,6 +168,7 @@ function FlowEditorCanvas({
         },
       },
     ])
+    
   }
 
   const onSelectionChange = useCallback(
