@@ -11,7 +11,8 @@ function AppLayout({ children }: { children: React.ReactNode }) {
     <main className='w-full h-full' >
 
       {/* <SidebarProvider open={isOpen}> */}
-        {children}
+      <AppSidebar />
+      {children}
       {/* </SidebarProvider> */}
     </main>
   )

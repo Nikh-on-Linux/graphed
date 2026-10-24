@@ -7,12 +7,13 @@ import {
     SidebarGroup,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuButton,
     SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useSidePanelStore } from '@/lib/stores/sidepanel.store.lib';
 import { Button } from '../ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ChevronRightIcon, ComponentIcon, PlusIcon, Pulse01Icon, XIcon } from '@hugeicons/core-free-icons';
+import { ChevronRightIcon, ComponentIcon, PlusIcon, Pulse01Icon, Setting06FreeIcons, Settings01FreeIcons, XIcon } from '@hugeicons/core-free-icons';
 import { Input } from '../ui/input';
 import { Textarea } from "@/components/ui/textarea"
 import { AnimatePresence, motion } from 'framer-motion';
@@ -79,7 +80,17 @@ function SidePanel() {
                 </SidebarGroup>
                 <SidebarGroup />
             </SidebarContent>
-            <SidebarFooter />
+            <SidebarFooter>
+                <SidebarMenu>
+                        <SidebarSeparator />
+                    <SidebarGroup>
+                        <SidebarMenuButton className='group/pgsettings cursor-pointer' >
+                            <HugeiconsIcon icon={Setting06FreeIcons} strokeWidth={2} className='group-hover/pgsettings:text-secondary-foreground text-muted-foreground' />
+                            <span className='font-sans font-medium text-muted-foreground group-hover/pgsettings:text-secondary-foreground' >Project Settings</span>
+                        </SidebarMenuButton>
+                    </SidebarGroup>
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }

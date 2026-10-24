@@ -11,6 +11,7 @@ function createWindow() {
         width: 1200,
         height: 800,
         autoHideMenuBar: true,
+        title: "Graphed",
         webPreferences: {
             preload: path_1.default.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -28,4 +29,10 @@ electron_1.app.whenReady().then(createWindow);
 electron_1.app.on('window-all-closed', () => {
     if (process.platform !== 'darwin')
         electron_1.app.quit();
+});
+electron_1.ipcMain.on("project:set-title", (event, projectName) => {
+    const window = electron_1.BrowserWindow.fromWebContents(event.sender);
+    if (!window)
+        return;
+    window.setTitle(`${projectName} - graphed`);
 });

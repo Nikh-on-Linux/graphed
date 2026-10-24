@@ -38,7 +38,6 @@ export default function RootLayout({
           }
           >
             <TooltipProvider>
-              <AppSidebar />
               {children}
               <Toaster richColors />
             </TooltipProvider>

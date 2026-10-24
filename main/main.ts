@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain} from 'electron';
 import path from 'path';
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -8,6 +8,7 @@ function createWindow() {
         width: 1200,
         height: 800,
         autoHideMenuBar:true,
+        title:"Graphed",
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -27,3 +28,11 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+
+ipcMain.on("project:set-title", (event, projectName: string) => {
+  const window = BrowserWindow.fromWebContents(event.sender)
+
+  if (!window) return
+
+  window.setTitle(`${projectName} - graphed`)
+})

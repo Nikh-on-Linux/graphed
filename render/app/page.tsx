@@ -50,6 +50,7 @@ import { removeFunctionGroupStore } from "@/lib/registry/functiongroup.registry.
 
 export default function Page() {
   const [projectName, setProjectName] = useState("");
+  const [description, setDescription] = useState("");
   const { setCurrentProject } = useActiveProjectStore();
   const [localProjects, SetLocalProjects] = useState<StoredProject[]>();
   const router = useRouter();
@@ -86,7 +87,7 @@ export default function Page() {
     projectStore.getState().setProject({
       id,
       name: projectName,
-      description: "",
+      description: description,
       functionGroupIds: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -125,7 +126,7 @@ export default function Page() {
               <QuestionnaireInput placeholder="Name of the project" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
               <QuestionnaireError />
             </QuestionnaireItem>
-            {/* <QuestionnaireItem name="Project Context" >
+            <QuestionnaireItem name="Project Context" >
               <DialogHeader>
                 <QuestionnaireProgress />
                 <QuestionnaireTitle render={<DialogTitle />}>Context of project</QuestionnaireTitle>
@@ -133,9 +134,9 @@ export default function Page() {
                   A quick brief about the project helps models understand your expectation and application of the design.
                 </QuestionnaireDescription>
               </DialogHeader>
-              <Textarea placeholder="e.g., A desktop based application that manages directories." />
+              <QuestionnaireInput render={<Textarea value={description} onChange={(e)=>setDescription(e.target.value)} onKeyDown={(e)=>{e.key == "Enter" ? e.stopPropagation() : null }} rows={2} className=" h-auto resize-y" placeholder="e.g., A desktop based application that manages directories." />} />
               <QuestionnaireError />
-            </QuestionnaireItem> */}
+            </QuestionnaireItem>
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant={"outline"} >
