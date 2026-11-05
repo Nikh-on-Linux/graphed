@@ -23,6 +23,7 @@ import { getFunctionGroupStore } from '@/lib/registry/functiongroup.registry.lib
 import { useActiveProjectStore } from '@/lib/stores/activeproject.store.lib';
 import { useStore } from 'zustand';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 
 function SidePanel() {
     const { isOpen, setOpen } = useSidePanelStore();
@@ -34,6 +35,16 @@ function SidePanel() {
         projectStore,
         (s) => s.project?.functionGroupIds
     )
+    const searchParams = useSearchParams();
+
+    useEffect(()=>{
+        if(searchParams.get("panel") == "components"){
+            setOpen(true);
+            return;
+        }
+
+        setOpen(false);
+    },[searchParams])
 
     const newFnGroup = () => {
         if (currentProjectId === null || currentProjectId === "") {
@@ -46,6 +57,11 @@ function SidePanel() {
         functionGroupStore.getState().setName(newFnValue);
     }
 
+    const closePanel = ()=>{
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("panel")
+    }
+
     return (
         <Sidebar collapsible="none" className="hidden min-w-0 flex-1 md:flex px-2" >
             <SidebarHeader className='flex flex-row items-center' >
@@ -53,7 +69,7 @@ function SidePanel() {
                     <h2 className='font-sans font-medium'>Components</h2>
                 </div>
                 <div>
-                    <Button variant={"ghost"} className='outline-none' size={"icon"} onClick={() => setOpen(false)} >
+                    <Button variant={"ghost"} className='outline-none' size={"icon"} onClick={closePanel} >
                         <HugeiconsIcon icon={XIcon} strokeWidth={2} />
                     </Button>
                 </div>

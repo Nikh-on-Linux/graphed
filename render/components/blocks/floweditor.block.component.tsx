@@ -49,13 +49,13 @@ export function FlowEditor() {
   const activeFunctionGroupId = useFlowEditorStore(
     (state) => state.activeFunctionGroupId
   );
-  const clearSelection  = useFlowEditorStore(
+  const clearSelection = useFlowEditorStore(
     (state) => state.clearSelection
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     return clearSelection();
-  },[])
+  }, [])
 
   if (!activeProjectId || !activeFunctionGroupId) {
     return <div className="h-screen w-full" />;
@@ -94,7 +94,14 @@ function FlowEditorCanvas({
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const flowRef = useRef<HTMLDivElement>(null);
   const { x, y, zoom } = useViewport()
-  const { deleteElements, updateNode} = useReactFlow();
+  const {
+    deleteElements,
+    getViewport,
+    setViewport,
+    screenToFlowPosition,
+    zoomIn,
+    zoomOut
+  } = useReactFlow();
 
   const nodeTypes = {
     functionNode: FunctionNode,
@@ -168,7 +175,7 @@ function FlowEditorCanvas({
         },
       },
     ])
-    
+
   }
 
   const onSelectionChange = useCallback(
@@ -203,6 +210,75 @@ function FlowEditorCanvas({
     [edges, selectedNodeIds]
   );
 
+  const PINCH_SENSITIVITY = 0.02;
+
+  useEffect(() => {
+    const container = flowRef.current;
+
+    if (!container) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      // Only intercept pinch gestures
+      if (!event.ctrlKey) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const viewport = getViewport();
+
+      // Calculate multiplicative zoom
+      const factor = Math.exp(
+        -event.deltaY * PINCH_SENSITIVITY
+      );
+
+      const newZoom = Math.min(
+        2,
+        Math.max(0.2, viewport.zoom * factor)
+      );
+
+      if (newZoom === viewport.zoom) return;
+
+      // Get the flow coordinate underneath the pointer
+      const flowPosition = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // Get the pointer position relative to the canvas
+      const bounds = container.getBoundingClientRect();
+
+      const pointerX = event.clientX - bounds.left;
+      const pointerY = event.clientY - bounds.top;
+
+      // Keep the pointer's flow coordinate stationary
+      const newX = pointerX - flowPosition.x * newZoom;
+      const newY = pointerY - flowPosition.y * newZoom;
+
+      setViewport(
+        {
+          x: newX,
+          y: newY,
+          zoom: newZoom,
+        },
+        { duration: 0 }
+      );
+    };
+
+    container.addEventListener("wheel", handleWheel, {
+      passive: false,
+      capture: true,
+    });
+
+    return () => {
+      container.removeEventListener(
+        "wheel",
+        handleWheel,
+        true
+      );
+    };
+  }, [getViewport, setViewport, screenToFlowPosition]);
+
+
   return (
     <div ref={flowRef} className="h-screen w-full">
       <ContextMenu>
@@ -217,7 +293,14 @@ function FlowEditorCanvas({
             nodeTypes={nodeTypes}
             selectionOnDrag
             onSelectionChange={onSelectionChange}
+            panOnScroll={true}
+            zoomOnScroll={false}
+            zoomOnPinch={true}
+
             panOnDrag={[1]}
+
+            // minZoom={0.2}
+            // maxZoom={2}
             fitView
             className="py-0"
           >

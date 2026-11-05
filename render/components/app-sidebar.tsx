@@ -25,6 +25,7 @@ import XIcon from "@hugeicons/core-free-icons/XIcon"
 import { Button } from "./ui/button"
 import SidePanel from "./blocks/sidepanel.block.component"
 import { useRouter } from "next/navigation"
+import { cn } from "cn"
 
 // This is sample data
 
@@ -47,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: (
           <HugeiconsIcon icon={Home02Icon} strokeWidth={2} />
         ),
-        isActive: true,
+        isActive: false,
         callback: () => {
           router.push("/");
         }
@@ -59,12 +60,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <HugeiconsIcon icon={ComponentIcon} strokeWidth={2} />
         ),
         isActive: false,
-        callback: () => setOpen(true)
+        callback: () => {
+          router.push("?panel=components");
+        }
       }
     ],
   }
 
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
+  const [activeItem, setActiveItem] = React.useState()
 
   return (
     <Sidebar
@@ -103,13 +106,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
                 {data.navMain.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.title} className="items-center flex relative">
+                    <div className={cn("w-1 h-1 bg-sidebar-primary rounded-full absolute")} ></div>
                     <SidebarMenuButton
                       tooltip={{
                         children: item.title,
                         hidden: false,
                       }}
-                      isActive={activeItem?.title === item.title}
+                      // isActive={activeItem?.title === item.title}
                       className="px-2.5 md:px-2"
                       onClick={() => item?.callback()}
                     >
