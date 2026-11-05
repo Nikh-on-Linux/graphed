@@ -38,6 +38,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import FunctionNode from "../nodes/function.node.component"
+import BranchNode from "../nodes/branch.node.component"
 import { getFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib"
 import { useFlowEditorStore } from "@/lib/stores/floweditor.store.lib"
 import { useStore } from "zustand"
@@ -105,6 +106,7 @@ function FlowEditorCanvas({
 
   const nodeTypes = {
     functionNode: FunctionNode,
+    branchNode: BranchNode
   };
 
   const onNodesChange = useCallback(
@@ -177,6 +179,62 @@ function FlowEditorCanvas({
     ])
 
   }
+
+  // Add's a branch in the diagram
+  const addBranch = () => {
+    const state = fnStore.getState();
+    const currentNodes = state.group.nodes;
+
+    let nodeNumber = currentNodes.length + 1;
+
+    while (
+      currentNodes.some(
+        (node) => node.id === `branch${nodeNumber}`
+      )
+    ) {
+      nodeNumber++;
+    }
+
+    const bounds = flowRef.current?.getBoundingClientRect();
+
+    const position = bounds
+      ? {
+        x: (bounds.width / 2 - x) / zoom,
+        y: (bounds.height / 2 - y) / zoom,
+      }
+      : { x: 0, y: 0 };
+
+    state.setNodes([
+      ...currentNodes,
+      {
+        id: `branch${nodeNumber}`,
+        position,
+        type: "branchNode",
+        data: {
+          label: `Branch ${nodeNumber}`,
+          inputs: [
+            {
+              id: `Branch-${nodeNumber}-condition`,
+              type: "boolean",
+              name: "Condition",
+            },
+          ],
+          outputs: [
+            {
+              id: `Branch-${nodeNumber}-true`,
+              type: "any",
+              name: "True",
+            },
+            {
+              id: `Branch-${nodeNumber}-false`,
+              type: "any",
+              name: "False",
+            },
+          ],
+        },
+      },
+    ]);
+  };
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes }: { nodes: Node[] }) => {
@@ -334,7 +392,7 @@ function FlowEditorCanvas({
                   />
                   Function
                 </ContextMenuItem>
-                <ContextMenuItem className="text-muted-foreground">
+                <ContextMenuItem className="text-muted-foreground" onClick={addBranch}>
                   <HugeiconsIcon
                     icon={WorkflowSquare07Icon}
                     strokeWidth={1.2}
