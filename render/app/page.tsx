@@ -100,7 +100,7 @@ export default function Page() {
     router.push("/app");
   };
 
-  const openProject = (id:string)=>{
+  const openProject = (id: string) => {
     setCurrentProject(id);
     router.push('/app');
   }
@@ -134,7 +134,7 @@ export default function Page() {
                   A quick brief about the project helps models understand your expectation and application of the design.
                 </QuestionnaireDescription>
               </DialogHeader>
-              <QuestionnaireInput render={<Textarea value={description} onChange={(e)=>setDescription(e.target.value)} onKeyDown={(e)=>{e.key == "Enter" ? e.stopPropagation() : null }} rows={2} className=" h-auto resize-y" placeholder="e.g., A desktop based application that manages directories." />} />
+              <QuestionnaireInput render={<Textarea value={description} onChange={(e) => setDescription(e.target.value)} onKeyDown={(e) => { e.key == "Enter" ? e.stopPropagation() : null }} rows={2} className=" h-auto resize-y" placeholder="e.g., A desktop based application that manages directories." />} />
               <QuestionnaireError />
             </QuestionnaireItem>
             <DialogFooter>
@@ -165,8 +165,8 @@ export default function Page() {
                 return (
                   <TableRow className="group flex duration-0" key={key}>
                     <TableCell className="flex-1 text-muted-foreground group-hover:text-foreground">{project.project.name}</TableCell>
-                    <TableCell onClick={()=>openProject(project.id)} className="opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
-                      <Button variant={"secondary"} className="group/b gap-0 hover:bg-foreground/20">
+                    <TableCell className="opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto">
+                      <Button onClick={() => openProject(project.id)} variant={"secondary"} className="group/b gap-0 hover:bg-foreground/20">
                         <span className="inline-grid grid-cols-[0fr] group-hover/b:grid-cols-[1fr] transition-[grid-template-columns] duration-200 ease-out">
                           <span className="overflow-hidden font-sans whitespace-nowrap">
                             Open
@@ -174,14 +174,46 @@ export default function Page() {
                         </span>
                         <HugeiconsIcon icon={ArrowUpRight01FreeIcons} />
                       </Button>
-                      <Button onClick={() => deleteProject(project.id)} variant="destructive" className="group/b gap-0">
-                        <span className="inline-grid grid-cols-[0fr] group-hover/b:grid-cols-[1fr] transition-[grid-template-columns] duration-200 ease-out">
-                          <span className="overflow-hidden font-sans whitespace-nowrap">
-                            Delete
-                          </span>
-                        </span>
-                        <HugeiconsIcon icon={Delete02Icon} />
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="destructive" className="group/b gap-0">
+                            <span className="inline-grid grid-cols-[0fr] group-hover/b:grid-cols-[1fr] transition-[grid-template-columns] duration-200 ease-out">
+                              <span className="overflow-hidden font-sans whitespace-nowrap">
+                                Delete
+                              </span>
+                            </span>
+                            <HugeiconsIcon icon={Delete02Icon} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Are you absolutely sure?</DialogTitle>
+                            <DialogDescription>
+                              This action cannot be undone. This will permanently delete your project
+                              and remove your data from our servers.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant={"default"}>Cancel</Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button variant={"destructive"}
+                                onClick={() => {
+                                  deleteProject(project.id)
+
+                                }}
+                              >
+                                <HugeiconsIcon
+                                  icon={Delete02Icon}
+                                  strokeWidth={2.5}
+                                />
+                                <span className="font-sans font-medium">Delete</span>
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </TableCell>
                   </TableRow>
                 )
@@ -190,6 +222,7 @@ export default function Page() {
           </TableBody>
         </Table>
       }
+
     </section>
   )
 }
