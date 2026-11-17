@@ -17,10 +17,20 @@ import {
   SidebarMenuSubItem,
 } from "../ui/sidebar"
 
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuGroup,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ChevronRightIcon,
   ComponentIcon,
+  Delete02Icon,
   EllipsisVerticalIcon,
   FunctionSquareIcon,
   Menu01FreeIcons,
@@ -28,6 +38,7 @@ import {
 
 import { getFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib"
 import { useFlowEditorStore } from "@/lib/stores/floweditor.store.lib"
+import { removeFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib";
 import { Button } from "../ui/button"
 import { cn } from "cn"
 
@@ -70,74 +81,90 @@ function FunctionGroup({
     selectFunctionGroup(currentProjectId, group)
   }
 
+  const deleteFunctionGroup = ()=>{
+    removeFunctionGroupStore(currentProjectId,group);
+  }
+
   return (
-    <Collapsible
-      className="group/collapsible"
-      asChild
-    >
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          onClick={handleSelect}
-          isActive={isActive}
-          tooltip={name}
-          className="min-w-0"
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <Collapsible
+          className="group/collapsible"
+          asChild
         >
-          <HugeiconsIcon
-            icon={ComponentIcon}
-            strokeWidth={1.8}
-            className={
-              isActive ? "text-sidebar-primary" : ""
-            }
-          />
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleSelect}
+              isActive={isActive}
+              tooltip={name}
+              className="min-w-0"
+            >
+              <HugeiconsIcon
+                icon={ComponentIcon}
+                strokeWidth={1.8}
+                className={
+                  isActive ? "text-sidebar-primary" : ""
+                }
+              />
 
-          <span className="min-w-0 flex-1 truncate font-sans font-medium">
-            {name}
-          </span>
-        </SidebarMenuButton>
+              <span className="min-w-0 flex-1 truncate font-sans font-medium">
+                {name}
+              </span>
+            </SidebarMenuButton>
 
-        <CollapsibleTrigger asChild>
-          <SidebarMenuAction
-            aria-label={`Toggle ${name}`}
-            showOnHover
-            className="group-data-[state=open]/collapsible:rotate-90"
-          >
-            <HugeiconsIcon
-              icon={ChevronRightIcon}
-              strokeWidth={2}
-            />
-          </SidebarMenuAction>
-        </CollapsibleTrigger>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuAction
+                aria-label={`Toggle ${name}`}
+                showOnHover
+                className="group-data-[state=open]/collapsible:rotate-90"
+              >
+                <HugeiconsIcon
+                  icon={ChevronRightIcon}
+                  strokeWidth={2}
+                />
+              </SidebarMenuAction>
+            </CollapsibleTrigger>
 
-        <CollapsibleContent>
-          <SidebarMenuSub className="w-full py-1.5" >
-            {nodes.map((node) => (
-              <SidebarMenuSubItem key={node.id} className="w-full">
-                <SidebarMenuSubButton
-                  className=" w-full group/nodelist"
-                  title={node.data.label || "Untitled node"}
-                >
-                  <HugeiconsIcon
-                    icon={FunctionSquareIcon}
-                    strokeWidth={1.5}
-                    className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
-                  />
+            <CollapsibleContent>
+              <SidebarMenuSub className="w-full py-1.5" >
+                {nodes.map((node) => (
+                  <SidebarMenuSubItem key={node.id} className="w-full">
+                    <SidebarMenuSubButton
+                      className=" w-full group/nodelist"
+                      title={node.data.label || "Untitled node"}
+                    >
+                      <HugeiconsIcon
+                        icon={FunctionSquareIcon}
+                        strokeWidth={1.5}
+                        className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
+                      />
 
-                  <span className="truncate w-full text-muted-foreground group-hover/nodelist:text-secondary-foreground">
-                    {node.data.label || "Untitled node"}
-                  </span>
+                      <span className="truncate w-full text-muted-foreground group-hover/nodelist:text-secondary-foreground">
+                        {node.data.label || "Untitled node"}
+                      </span>
 
-                  <Button size={"icon"} variant={"ghost"} className={cn("cursor-pointer",`group-hover/nodelist:block hidden`)} >
-                    <HugeiconsIcon
-                    icon={EllipsisVerticalIcon} strokeWidth={1.5}
-                    className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground" />
-                  </Button>
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
-      </SidebarMenuItem>
-    </Collapsible>
+                      <Button size={"icon"} variant={"ghost"} className={cn("cursor-pointer", `group-hover/nodelist:block hidden`)} >
+                        <HugeiconsIcon
+                          icon={EllipsisVerticalIcon} strokeWidth={1.5}
+                          className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground" />
+                      </Button>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ))}
+              </SidebarMenuSub>
+            </CollapsibleContent>
+          </SidebarMenuItem>
+        </Collapsible>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuGroup>
+          <ContextMenuItem className="group hover:bg-destructive/10!"  onClick={deleteFunctionGroup}>
+            <HugeiconsIcon icon={Delete02Icon} strokeWidth={2.5} className="text-destructive group-hover:text-destructive!" />
+            <span className="font-sans font-medium text-destructive">Delete</span>
+          </ContextMenuItem>
+        </ContextMenuGroup>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }
 

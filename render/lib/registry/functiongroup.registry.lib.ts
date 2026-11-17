@@ -9,22 +9,34 @@ export function getFunctionGroupStore(
   projectId: string,
   groupId: string
 ) {
-  let store = functionGroupStores.get(groupId);
+  const key = `project:${projectId}:function-group:${groupId}`;
+  let store = functionGroupStores.get(key);
 
   if (!store) {
     store = createFunctionGroupStore(
       projectId,
       groupId
     );
-
-    functionGroupStores.set(groupId, store);
+    functionGroupStores.set(key, store);
   }
 
   return store;
 }
 
 export function removeFunctionGroupStore(
+  projectId: string,
   groupId: string
 ) {
-  functionGroupStores.delete(groupId);
+  const key = `project:${projectId}:function-group:${groupId}`
+  const store = functionGroupStores.get(key);
+  console.log(store);
+  if (store) {
+    // Remove persisted Zustand data
+    console.log(key);
+    console.log(store);
+    store.persist.clearStorage();
+
+    // Remove in-memory store instance
+    functionGroupStores.delete(key);
+  }
 }
