@@ -23,7 +23,7 @@ import { getFunctionGroupStore } from '@/lib/registry/functiongroup.registry.lib
 import { useActiveProjectStore } from '@/lib/stores/activeproject.store.lib';
 import { useStore } from 'zustand';
 import { toast } from 'sonner';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 function SidePanel() {
     const { isOpen, setOpen } = useSidePanelStore();
@@ -36,15 +36,17 @@ function SidePanel() {
         (s) => s.project?.functionGroupIds
     )
     const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const router = useRouter();
 
-    useEffect(()=>{
-        if(searchParams.get("panel") == "components"){
+    useEffect(() => {
+        if (searchParams.get("panel") == "components") {
             setOpen(true);
             return;
         }
 
         setOpen(false);
-    },[searchParams])
+    }, [searchParams])
 
     const newFnGroup = () => {
         if (currentProjectId === null || currentProjectId === "") {
@@ -57,10 +59,13 @@ function SidePanel() {
         functionGroupStore.getState().setName(newFnValue);
     }
 
-    const closePanel = ()=>{
+    const closePanel = () => {
         const params = new URLSearchParams(searchParams.toString());
-        params.delete("panel")
-    }
+        params.delete("panel");
+
+        const query = params.toString();
+        router.replace(query ? `${pathname}?${query}` : pathname);
+    };
 
     return (
         <Sidebar collapsible="none" className="hidden min-w-0 flex-1 md:flex px-2" >
@@ -98,7 +103,7 @@ function SidePanel() {
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
-                        <SidebarSeparator />
+                    <SidebarSeparator />
                     <SidebarGroup>
                         <SidebarMenuButton className='group/pgsettings cursor-pointer' >
                             <HugeiconsIcon icon={Setting06FreeIcons} strokeWidth={2} className='group-hover/pgsettings:text-secondary-foreground text-muted-foreground' />
