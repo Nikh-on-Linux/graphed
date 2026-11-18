@@ -1,28 +1,9 @@
 import { createStore } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
-import type { Node, Edge } from "@xyflow/react";
-
-export type FunctionGroup = {
-  id: string;
-  name: string;
-  description: string;
-
-  nodes: Node[];
-  edges: Edge[];
-};
-
-export type FunctionGroupStore = {
-  group: FunctionGroup;
-
-  setName: (name: string) => void;
-  setDescription: (value: string) => void;
-
-  setNodes: (nodes: Node[]) => void;
-  setEdges: (edges: Edge[]) => void;
-
-  updateNodes: (nodes: Node[]) => void;
-  updateEdges: (edges: Edge[]) => void;
-};
+import type {
+  EditorNode,
+  FunctionGroupStore,
+} from "@/lib/types/functiongroup.type.lib";
 
 export const createFunctionGroupStore = (
   projectId: string,

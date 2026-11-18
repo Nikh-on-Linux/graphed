@@ -1,4 +1,5 @@
 import { createFunctionGroupStore } from "@/lib/stores/functiongroup.store.lib";
+import { getProjectStore } from "./project.registry.lib";
 
 const functionGroupStores = new Map<
   string,
@@ -29,14 +30,13 @@ export function removeFunctionGroupStore(
 ) {
   const key = `project:${projectId}:function-group:${groupId}`
   const store = functionGroupStores.get(key);
-  console.log(store);
   if (store) {
     // Remove persisted Zustand data
-    console.log(key);
-    console.log(store);
     store.persist.clearStorage();
-
     // Remove in-memory store instance
     functionGroupStores.delete(key);
   }
+
+  const projectStore = getProjectStore(projectId);
+  projectStore.getInitialState().removeFunctionGroup(groupId);
 }

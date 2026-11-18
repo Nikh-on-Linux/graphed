@@ -1,18 +1,9 @@
 import { createStore } from "zustand/vanilla";
 import { persist } from "zustand/middleware";
-import { Project } from "@/lib/types/project.type.lib";
-
-export type ProjectStore = {
-  project: Project | null;
-
-  setProject: (project: Project) => void;
-
-  updateProject: (updates: Partial<Project>) => void;
-
-  addFunctionGroup: (groupId: string) => void;
-
-  removeFunctionGroup: (groupId: string) => void;
-};
+import type {
+  Project,
+  ProjectStore,
+} from "@/lib/types/project.type.lib";
 
 export const createProjectStore = (projectId: string) => {
   return createStore<ProjectStore>()(

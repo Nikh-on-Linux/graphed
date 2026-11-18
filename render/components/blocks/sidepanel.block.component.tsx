@@ -57,6 +57,7 @@ function SidePanel() {
         projectStore.getState().addFunctionGroup(groupId);
         const functionGroupStore = getFunctionGroupStore(currentProjectId || "", groupId);
         functionGroupStore.getState().setName(newFnValue);
+        setNewFnValue("");
     }
 
     const closePanel = () => {
@@ -82,7 +83,12 @@ function SidePanel() {
             <SidebarContent>
                 {/* <SidebarSeparator /> */}
                 <SidebarGroup className='flex flex-row items-center gap-2' >
-                    <Input placeholder='New group name' value={newFnValue} onChange={(e) => setNewFnValue(e.target.value)} />
+                    <Input onKeyDown={(e)=>{
+                        if(e.key == "Enter"){
+                            newFnGroup();
+                            return;
+                        }
+                    }} placeholder='New group name' value={newFnValue} onChange={(e) => setNewFnValue(e.target.value)} />
                     <Button variant={"outline"} size={"icon"} onClick={newFnGroup} >
                         <HugeiconsIcon icon={PlusIcon} strokeWidth={2} />
                     </Button>

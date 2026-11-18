@@ -57,8 +57,7 @@ export function FlowEditor() {
   useEffect(() => {
     return clearSelection();
   }, [])
-
-  if (!activeProjectId || !activeFunctionGroupId) {
+  if (!activeProjectId && !activeFunctionGroupId) {
     return <div className="h-screen w-full" />;
   }
 

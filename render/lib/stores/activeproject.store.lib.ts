@@ -1,10 +1,5 @@
 import { create } from "zustand";
-
-type ActiveProjectStore = {
-  currentProjectId: string | null;
-
-  setCurrentProject: (projectId: string | null) => void;
-};
+import type { ActiveProjectStore } from "@/lib/types/activeproject.type.lib";
 
 export const useActiveProjectStore = create<ActiveProjectStore>((set) => ({
   currentProjectId: null,

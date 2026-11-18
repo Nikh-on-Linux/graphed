@@ -1,10 +1,6 @@
 // store.ts
 import { create } from 'zustand'
-
-interface SidePanelInterface {
-    isOpen: boolean
-    setOpen: (value: boolean) => void
-}
+import type { SidePanelInterface } from '@/lib/types/sidepanel.type.lib'
 
 // Create store using the curried form of `create`
 export const useSidePanelStore = create<SidePanelInterface>()((set) => ({

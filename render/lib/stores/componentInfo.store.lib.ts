@@ -1,15 +1,5 @@
 import { create } from "zustand";
-
-interface ComponentContext {
-    id: string,
-    context: string,
-    name: string,
-    panelOpen: boolean,
-    setId: (id: string) => void;
-    setContext: (value: string) => void;
-    setName: (value: string) => void;
-    setPanelOpen: (value: boolean) => void;
-}
+import type { ComponentContext } from "@/lib/types/component.type.lib";
 
 export const useComponentStore = create<ComponentContext>()((set) => ({
     id: "",

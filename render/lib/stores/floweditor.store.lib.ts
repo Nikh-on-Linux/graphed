@@ -1,17 +1,6 @@
 
 import { create } from "zustand";
-
-type FlowEditorState = {
-  activeProjectId: string | null;
-  activeFunctionGroupId: string | null;
-
-  selectFunctionGroup: (
-    projectId: string,
-    groupId: string
-  ) => void;
-
-  clearSelection: () => void;
-};
+import type { FlowEditorState } from "@/lib/types/floweditor.type.lib";
 
 export const useFlowEditorStore = create<FlowEditorState>()(
   (set) => ({

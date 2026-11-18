@@ -35,6 +35,7 @@ import {
   FunctionSquareIcon,
   GitBranchIcon,
   Menu01FreeIcons,
+  Pen01Icon,
 } from "@hugeicons/core-free-icons"
 
 import { getFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib"
@@ -42,11 +43,7 @@ import { useFlowEditorStore } from "@/lib/stores/floweditor.store.lib"
 import { removeFunctionGroupStore } from "@/lib/registry/functiongroup.registry.lib";
 import { Button } from "../ui/button"
 import { cn } from "cn"
-
-type FunctionGroupProps = {
-  currentProjectId: string
-  group: string
-}
+import type { FunctionGroupProps } from "@/lib/types/functiongroup.type.lib";
 
 function FunctionGroup({
   currentProjectId,
@@ -66,6 +63,10 @@ function FunctionGroup({
     (state) => state.selectFunctionGroup
   )
 
+  const clearSelection = useFlowEditorStore(
+    (state) => state.clearSelection
+  )
+
   const activeProjectId = useFlowEditorStore(
     (state) => state.activeProjectId
   )
@@ -82,18 +83,19 @@ function FunctionGroup({
     selectFunctionGroup(currentProjectId, group)
   }
 
-  const deleteFunctionGroup = ()=>{
-    removeFunctionGroupStore(currentProjectId,group);
+  const deleteFunctionGroup = () => {
+    removeFunctionGroupStore(currentProjectId, group);
+    clearSelection();
   }
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        <Collapsible
-          className="group/collapsible"
-          asChild
-        >
-          <SidebarMenuItem>
+    <Collapsible
+      className="group/collapsible"
+      asChild
+    >
+      <SidebarMenuItem>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
             <SidebarMenuButton
               onClick={handleSelect}
               isActive={isActive}
@@ -112,71 +114,77 @@ function FunctionGroup({
                 {name}
               </span>
             </SidebarMenuButton>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuGroup>
+              <ContextMenuItem>
+                <HugeiconsIcon icon={Pen01Icon} strokeWidth={2.5} />
+                <span>Rename function group</span>
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem className="group hover:bg-destructive/10!" onClick={deleteFunctionGroup}>
+                <HugeiconsIcon icon={Delete02Icon} strokeWidth={2.5} className="text-destructive group-hover:text-destructive!" />
+                <span className="font-sans font-medium text-destructive">Delete</span>
+              </ContextMenuItem>
+            </ContextMenuGroup>
+          </ContextMenuContent>
+        </ContextMenu>
 
-            <CollapsibleTrigger asChild>
-              <SidebarMenuAction
-                aria-label={`Toggle ${name}`}
-                showOnHover
-                className="group-data-[state=open]/collapsible:rotate-90"
-              >
-                <HugeiconsIcon
-                  icon={ChevronRightIcon}
-                  strokeWidth={2}
-                />
-              </SidebarMenuAction>
-            </CollapsibleTrigger>
+        <CollapsibleTrigger asChild>
+          <SidebarMenuAction
+            aria-label={`Toggle ${name}`}
+            showOnHover
+            className="group-data-[state=open]/collapsible:rotate-90"
+          >
+            <HugeiconsIcon
+              icon={ChevronRightIcon}
+              strokeWidth={2}
+            />
+          </SidebarMenuAction>
+        </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <SidebarMenuSub className="w-full py-1.5" >
+          <SidebarMenuSub className="w-full py-1.5">
             {nodes.map((node) => {
               return (
                 <SidebarMenuSubItem key={node.id} className="w-full">
                   <SidebarMenuSubButton
-                    className=" w-full group/nodelist"
+                    className="w-full group/nodelist"
                     title={node.data.label || "Untitled node"}
                   >
-                    {
-                      node.type == "functionNode" ?
-                        <HugeiconsIcon
-                          icon={FunctionSquareIcon}
-                          strokeWidth={1.5}
-                          className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
-                        />
-                        :
-                        <HugeiconsIcon
-                          icon={GitBranchIcon}
-                          strokeWidth={1.5}
-                          className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
-                        />
-                    }
+                    {node.type == "functionNode" ? (
+                      <HugeiconsIcon
+                        icon={FunctionSquareIcon}
+                        strokeWidth={1.5}
+                        className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
+                      />
+                    ) : (
+                      <HugeiconsIcon
+                        icon={GitBranchIcon}
+                        strokeWidth={1.5}
+                        className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
+                      />
+                    )}
 
                     <span className="truncate w-full text-muted-foreground group-hover/nodelist:text-secondary-foreground">
                       {node.data.label || "Untitled node"}
                     </span>
 
-                    <Button size={"icon"} variant={"ghost"} className={cn("cursor-pointer", `group-hover/nodelist:block hidden`)} >
+                    <Button size="icon" variant="ghost" className={cn("cursor-pointer", "group-hover/nodelist:block hidden")}>
                       <HugeiconsIcon
-                        icon={EllipsisVerticalIcon} strokeWidth={1.5}
-                        className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground" />
+                        icon={EllipsisVerticalIcon}
+                        strokeWidth={1.5}
+                        className="shrink-0 text-muted-foreground group-hover/nodelist:text-secondary-foreground"
+                      />
                     </Button>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
-              )
+              );
             })}
           </SidebarMenuSub>
         </CollapsibleContent>
       </SidebarMenuItem>
     </Collapsible>
-    </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuGroup>
-          <ContextMenuItem className="group hover:bg-destructive/10!"  onClick={deleteFunctionGroup}>
-            <HugeiconsIcon icon={Delete02Icon} strokeWidth={2.5} className="text-destructive group-hover:text-destructive!" />
-            <span className="font-sans font-medium text-destructive">Delete</span>
-          </ContextMenuItem>
-        </ContextMenuGroup>
-      </ContextMenuContent>
-    </ContextMenu>
   )
 }
 
