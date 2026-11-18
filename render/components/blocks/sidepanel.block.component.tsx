@@ -69,7 +69,7 @@ function SidePanel() {
     };
 
     return (
-        <Sidebar collapsible="none" className="hidden min-w-0 flex-1 md:flex px-2" >
+        <Sidebar collapsible="none" className="relative hidden min-w-0 flex-1 md:flex px-2" >
             <SidebarHeader className='flex flex-row items-center' >
                 <div className='w-full' >
                     <h2 className='font-sans font-medium'>Components</h2>
@@ -83,8 +83,8 @@ function SidePanel() {
             <SidebarContent>
                 {/* <SidebarSeparator /> */}
                 <SidebarGroup className='flex flex-row items-center gap-2' >
-                    <Input onKeyDown={(e)=>{
-                        if(e.key == "Enter"){
+                    <Input onKeyDown={(e) => {
+                        if (e.key == "Enter") {
                             newFnGroup();
                             return;
                         }

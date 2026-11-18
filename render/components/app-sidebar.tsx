@@ -63,6 +63,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         callback: () => {
           router.push("?panel=components");
         }
+      },
+      {
+        title: "Schemas",
+        url: "/",
+        icon: (
+          <HugeiconsIcon icon={ComponentIcon} strokeWidth={2} />
+        ),
+        isActive: false,
+        callback: () => {
+          router.push("?panel=components");
+        }
       }
     ],
   }
