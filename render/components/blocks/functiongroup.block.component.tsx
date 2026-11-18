@@ -58,6 +58,7 @@ import { Button } from "../ui/button"
 import { cn } from "cn"
 import type { FunctionGroupProps } from "@/lib/types/functiongroup.type.lib";
 import { Textarea } from "../ui/textarea";
+import { toast } from "sonner";
 
 function FunctionGroup({
   currentProjectId,
@@ -139,6 +140,8 @@ function FunctionGroup({
 
   const saveContext = () => {
     fngroup.getState().setDescription(contextDescription)
+    toast.success("Function group context saved")
+    setIsContextOpen(false)
   }
 
   return (
@@ -216,6 +219,7 @@ function FunctionGroup({
                   <Button
                     className="float-right mt-3"
                     variant="default"
+                    type="button"
                     onClick={saveContext}
                   >
                     <span>Save</span>
